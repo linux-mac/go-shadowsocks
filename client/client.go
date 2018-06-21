@@ -31,6 +31,16 @@ const (
 
 var debug comm.DebugLog
 
+//ServerCipher 服务端数据结构
+type ServerCipher struct {
+	server string
+	cipher *comm.Cipher
+}
+
+var servers struct {
+	srv *ServerCipher
+}
+
 //handshake: sockets 握手阶段
 func handshake(conn net.Conn) (err error) {
 	debug.Println("start handshake...")
@@ -142,7 +152,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 
 //createServerConn: 连接远程服务器
 func createServerConn(rawaddr []byte, addr string) (conn net.Conn, err error) {
-	conn, err = net.Dial("tcp", ":15000")
+	conn, err = net.Dial("tcp", servers.srv.server)
 	if err != nil {
 		return
 	}
@@ -201,6 +211,8 @@ func main() {
 		log.Println(err)
 		return
 	}
+	remote := config.Server + ":" + strconv.Itoa(config.Port)
+	servers.srv = &ServerCipher{remote, nil}
 	run(config.LocalServer + ":" + strconv.Itoa(config.LocalPort))
 }
 
