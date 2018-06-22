@@ -11,7 +11,7 @@ func PipeThenClose(src, dst net.Conn) {
 	defer dst.Close()
 	log.Println("start pipe...")
 	for {
-		src.SetReadDeadline(time.Now().Add(600 * time.Second))
+		src.SetReadDeadline(time.Now().Add(ReadTimeout * time.Second))
 		buf := make([]byte, 4096)
 		n, err := src.Read(buf)
 		if n > 0 {

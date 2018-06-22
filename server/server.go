@@ -71,7 +71,7 @@ func getRequest(conn net.Conn) (host string, err error) {
 
 func handleClient(conn net.Conn) {
 	debug.Println("start handle client...")
-	conn.SetReadDeadline(time.Now().Add(time.Minute * 2))
+	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
 	defer conn.Close()
 	host, err := getRequest(conn)
 	if err != nil {
@@ -88,7 +88,7 @@ func handleClient(conn net.Conn) {
 }
 
 func run(port string) {
-	debug.Println("start listen...")
+	debug.Println("start listen port:", port)
 	ln, err := net.Listen("tcp", port)
 	if err != nil {
 		debug.Printf("error listening port %v: %v\n", port, err)
@@ -116,5 +116,5 @@ func main() {
 		debug.Println(err)
 		return
 	}
-	run(config.Server + ":" + strconv.Itoa(config.Port))
+	run(":" + strconv.Itoa(config.Port))
 }

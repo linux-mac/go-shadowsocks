@@ -19,7 +19,8 @@ type Config struct {
 	Timeout     int    `json:"timeout"`
 }
 
-var readTimeout time.Duration
+//ReadTimeout 连接超时时间
+var ReadTimeout time.Duration
 
 //ParseConfig 解析配置
 func ParseConfig(path string) (config *Config, err error) {
@@ -38,6 +39,6 @@ func ParseConfig(path string) (config *Config, err error) {
 	if err = json.Unmarshal(data, &config); err != nil {
 		return nil, err
 	}
-	readTimeout = time.Duration(config.Timeout) * time.Second
+	ReadTimeout = time.Duration(config.Timeout) * time.Second
 	return
 }

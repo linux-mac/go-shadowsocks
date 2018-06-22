@@ -44,10 +44,9 @@ var servers struct {
 //handshake: sockets 握手阶段
 func handshake(conn net.Conn) (err error) {
 	debug.Println("start handshake...")
-
 	//Identifier: the client will connect to the server
 	buf := make([]byte, 258)
-	conn.SetReadDeadline(time.Now().Add(time.Minute * 2))
+	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 2); err != nil {
 		return err
@@ -67,9 +66,7 @@ func handshake(conn net.Conn) (err error) {
 		return errAuthExtraData
 	}
 	_, err = conn.Write([]byte{5, 0})
-	if debug {
-		log.Println("finished handshake...")
-	}
+	debug.Println("finished handshake...")
 	return
 }
 
@@ -92,9 +89,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 		lenDmBase = 3 + 1 + 1 + 2           // 3 + 1addrType + 1addrLen + 2port, plus addrLen
 	)
 
-	debug.Println("start get request...")
-
-	conn.SetReadDeadline(time.Now().Add(time.Minute * 2))
+	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
 	buf := make([]byte, 263)
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 5); err != nil { // VER+CMD+RSV+ATYP=4
@@ -144,8 +139,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 		}
 		port := binary.BigEndian.Uint16(buf[reqLen-2 : reqLen])
 		host = net.JoinHostPort(host, strconv.Itoa(int(port)))
-		log.Println("host:", host)
-		log.Println("finished get request...")
+		debug.Println("visit website host:", host)
 	}
 	return
 }
@@ -156,31 +150,31 @@ func createServerConn(rawaddr []byte, addr string) (conn net.Conn, err error) {
 	if err != nil {
 		return
 	}
+	debug.Printf("connect to remote:%s success", servers.srv.server)
 	if _, err = conn.Write(rawaddr); err != nil {
-		return nil, err
+		return
 	}
 	return
 }
 
 func handleConnection(conn net.Conn) {
-	debug.Printf("socks connect to the server %s\n", conn.RemoteAddr().String())
-
 	if err := handshake(conn); err != nil {
-		log.Printf("handshake: %s", err)
+		debug.Printf("handshake: %s", err)
 		return
 	}
 	rawaddr, addr, err := getRequest(conn)
 	if err != nil {
-		log.Printf("error get request: %s\n", err)
+		debug.Printf("error get request: %s\n", err)
 		return
 	}
 	_, err = conn.Write([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x08, 0x43})
 	if err != nil {
-		log.Println("send connection confirmation:", err)
+		debug.Println("send connection confirmation:", err)
 		return
 	}
 	remote, err := createServerConn(rawaddr, addr)
 	if err != nil {
+		debug.Println("connect to remote error: ", err)
 		return
 	}
 	go comm.PipeThenClose(conn, remote)
