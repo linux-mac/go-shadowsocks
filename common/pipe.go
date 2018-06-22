@@ -9,9 +9,8 @@ import (
 //PipeThenClose 端口数据转发
 func PipeThenClose(src, dst net.Conn) {
 	defer dst.Close()
-	log.Println("start pipe...")
 	for {
-		src.SetReadDeadline(time.Now().Add(ReadTimeout * time.Second))
+		src.SetReadDeadline(time.Now().Add(ReadTimeout))
 		buf := make([]byte, 4096)
 		n, err := src.Read(buf)
 		if n > 0 {
@@ -23,8 +22,6 @@ func PipeThenClose(src, dst net.Conn) {
 		if err != nil {
 			break
 		}
-		log.Println("data: ", string(buf[:n-1]))
 	}
-	log.Println("finished")
 	return
 }

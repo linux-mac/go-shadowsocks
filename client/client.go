@@ -44,9 +44,8 @@ var servers struct {
 //handshake: sockets 握手阶段
 func handshake(conn net.Conn) (err error) {
 	debug.Println("start handshake...")
-	//Identifier: the client will connect to the server
 	buf := make([]byte, 258)
-	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
+	conn.SetReadDeadline(time.Now().Add(comm.ReadTimeout))
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 2); err != nil {
 		return err
@@ -89,7 +88,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 		lenDmBase = 3 + 1 + 1 + 2           // 3 + 1addrType + 1addrLen + 2port, plus addrLen
 	)
 
-	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
+	conn.SetReadDeadline(time.Now().Add(comm.ReadTimeout))
 	buf := make([]byte, 263)
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 5); err != nil { // VER+CMD+RSV+ATYP=4

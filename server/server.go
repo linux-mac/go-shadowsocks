@@ -71,7 +71,7 @@ func getRequest(conn net.Conn) (host string, err error) {
 
 func handleClient(conn net.Conn) {
 	debug.Println("start handle client...")
-	conn.SetReadDeadline(time.Now().Add(time.Second * comm.ReadTimeout))
+	conn.SetReadDeadline(time.Now().Add(comm.ReadTimeout))
 	defer conn.Close()
 	host, err := getRequest(conn)
 	if err != nil {
