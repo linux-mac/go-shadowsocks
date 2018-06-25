@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
@@ -37,7 +38,15 @@ func ParseConfig(path string) (config *Config, err error) {
 	}
 	config = &Config{}
 	if err = json.Unmarshal(data, &config); err != nil {
-		return nil, err
+		return
+	}
+	if config.Password == "" {
+		err = errors.New("Config password cannot be empty")
+		return
+	}
+	if config.Method == "" {
+		err = errors.New("Config method cannot be empty")
+		return
 	}
 	ReadTimeout = time.Duration(config.Timeout) * time.Second
 	return

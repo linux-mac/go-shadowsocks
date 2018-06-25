@@ -34,7 +34,6 @@ var debug comm.DebugLog
 //ServerCipher 服务端数据结构
 type ServerCipher struct {
 	server string
-	cipher *comm.Cipher
 }
 
 var servers struct {
@@ -176,17 +175,15 @@ func handleConnection(conn net.Conn) {
 		debug.Println("connect to remote error: ", err)
 		return
 	}
-	go comm.PipeThenClose(conn, remote)
-	comm.PipeThenClose(remote, conn)
+	go comm.PipeThenClose(conn, remote, false, true)
+	comm.PipeThenClose(remote, conn, true, false)
 	debug.Println("closed connection to", addr)
 }
 
 func run(addr string) {
 	l, err := net.Listen("tcp", addr)
 	checkError("listening: ", err)
-
 	debug.Printf("start listening socks5 at %v...\n", addr)
-
 	for {
 		conn, err := l.Accept()
 		checkError("accept: ", err)
@@ -204,8 +201,9 @@ func main() {
 		log.Println(err)
 		return
 	}
+	comm.InitCipher(config)
 	remote := config.Server + ":" + strconv.Itoa(config.Port)
-	servers.srv = &ServerCipher{remote, nil}
+	servers.srv = &ServerCipher{remote}
 	run(config.LocalServer + ":" + strconv.Itoa(config.LocalPort))
 }
 

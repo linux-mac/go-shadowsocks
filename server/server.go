@@ -83,8 +83,8 @@ func handleClient(conn net.Conn) {
 		debug.Printf("dial error: %s", err)
 		return
 	}
-	go comm.PipeThenClose(conn, remote)
-	comm.PipeThenClose(remote, conn)
+	go comm.PipeThenClose(conn, remote, true, false)
+	comm.PipeThenClose(remote, conn, false, true)
 }
 
 func run(port string) {
@@ -116,5 +116,6 @@ func main() {
 		debug.Println(err)
 		return
 	}
+	comm.InitCipher(config)
 	run(":" + strconv.Itoa(config.Port))
 }
