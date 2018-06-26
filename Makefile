@@ -2,7 +2,7 @@ PREFIX := ss
 CLIENT := $(GOPATH)/bin/$(PREFIX)-client
 SERVER := $(GOPATH)/bin/$(PREFIX)-server
 
-.PHONY: clean
+.PHONY: clean compress
 
 all: $(CLIENT) $(SERVER)
 
@@ -15,6 +15,11 @@ $(SERVER): common/*.go $(PREFIX)-server/*.go
 client: $(CLIENT)
 
 server: $(SERVER)
+
+compress: $(CLIENT) $(SERVER)
+	cd $(GOPATH)/bin; \
+	tar cvzf $(PREFIX)-client.tar.gz $(PREFIX)-client; \
+	tar cvzf $(PREFIX)-server.tar.gz $(PREFIX)-server
 
 clean:
 	rm -f $(CLIENT) $(SERVER)
