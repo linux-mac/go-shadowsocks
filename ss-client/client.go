@@ -192,11 +192,13 @@ func run(addr string) {
 }
 
 func main() {
+	var configPath string
 	flag.BoolVar((*bool)(&debug), "d", false, "print debug message")
+	flag.StringVar(&configPath, "c", "config.json", "配置路径")
 	flag.Parse()
 
 	comm.SetDebug(debug)
-	config, err := comm.ParseConfig("../config.json")
+	config, err := comm.ParseConfig(configPath)
 	if err != nil {
 		log.Println(err)
 		return

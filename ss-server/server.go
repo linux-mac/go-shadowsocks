@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"strconv"
@@ -107,13 +108,15 @@ func run(port string) {
 }
 
 func main() {
-	flag.BoolVar((*bool)(&debug), "d", false, "print debug message")
+	var configPath string
+	flag.BoolVar((*bool)(&debug), "d", false, "调试环境")
+	flag.StringVar(&configPath, "c", "config.json", "配置路径")
 	flag.Parse()
 
 	comm.SetDebug(debug)
-	config, err := comm.ParseConfig("../config.json")
+	config, err := comm.ParseConfig(configPath)
 	if err != nil {
-		debug.Println(err)
+		log.Println(err)
 		return
 	}
 	comm.InitCipher(config)
