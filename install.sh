@@ -4,7 +4,7 @@ os_uname=`uname`
 if [[ $os_uname == 'Linux' ]]; then
     platform='linux'
 elif [[ $os_uname == 'Darwin' ]]; then
-    platform='Darwin'
+    platform='darwin'
 fi
 
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz
