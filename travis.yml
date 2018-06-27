@@ -1,0 +1,5 @@
+language: go
+go:
+ - "1.10"
+script:
+ - curl -sSL https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/install | bash && ss-server -v
