@@ -18,7 +18,7 @@ server: common/*.go $(prefix)-client/*.go
 	go build -o $(server_darwin) server.go; \
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(server_linux) server.go
 
-compress: $(client) $(server)
+compress: all
 	cd $(GOPATH)/bin; \
 	tar czf $(prefix)-client-darwin-amd64.tar.gz $(prefix)-client-darwin-amd64; \
 	tar czf $(prefix)-client-linux-amd64.tar.gz $(prefix)-client-linux-amd64; \

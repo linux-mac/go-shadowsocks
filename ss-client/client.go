@@ -194,7 +194,7 @@ func run(addr string) {
 func main() {
 	var configPath string
 	flag.BoolVar((*bool)(&debug), "d", false, "print debug message")
-	flag.StringVar(&configPath, "c", "~/.shadowsocks/config.json", "配置路径")
+	flag.StringVar(&configPath, "c", os.Getenv("HOME")+"/.shadowsocks/config.json", "配置路径")
 	flag.Parse()
 
 	comm.SetDebug(debug)

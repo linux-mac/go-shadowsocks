@@ -110,7 +110,7 @@ func run(port string) {
 func main() {
 	var configPath string
 	flag.BoolVar((*bool)(&debug), "d", false, "调试环境")
-	flag.StringVar(&configPath, "c", "~/.shadowsocks/config.json", "配置路径")
+	flag.StringVar(&configPath, "c", os.Getenv("HOME")+"/.shadowsocks/config.json", "配置路径")
 	flag.Parse()
 	debug.Println(configPath)
 	comm.SetDebug(debug)
