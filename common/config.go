@@ -27,7 +27,6 @@ var ReadTimeout time.Duration
 func ParseConfig(path string) (config *Config, err error) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Println("config.json not found!")
 		return
 	}
 	defer file.Close()
