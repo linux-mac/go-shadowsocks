@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -30,15 +29,6 @@ const (
 )
 
 var debug comm.DebugLog
-
-//ServerCipher 服务端数据结构
-type ServerCipher struct {
-	server string
-}
-
-var servers struct {
-	srv *ServerCipher
-}
 
 //handshake: sockets 握手阶段
 func handshake(conn net.Conn) (err error) {
@@ -137,25 +127,32 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 		}
 		port := binary.BigEndian.Uint16(buf[reqLen-2 : reqLen])
 		host = net.JoinHostPort(host, strconv.Itoa(int(port)))
-		debug.Println("visit website host:", host)
+		debug.Println("visit host:", host)
 	}
 	return
 }
 
 //createServerConn: 连接远程服务器
-func createServerConn(rawaddr []byte, addr string) (conn net.Conn, err error) {
-	conn, err = net.Dial("tcp", servers.srv.server)
+func createServerConn(rawaddr []byte, addr string) (remote *comm.Conn, err error) {
+	serverport := server.srvCipher.srv.Server + ":" + strconv.Itoa(server.srvCipher.srv.Port)
+	remote, err = comm.DialWithRawAddr(rawaddr, serverport, server.srvCipher.cipher)
 	if err != nil {
-		return
+		log.Println("error connecting to shadowsocks server:", err)
+		return nil, err
 	}
-	debug.Printf("connect to remote:%s success", servers.srv.server)
-	if _, err = conn.Write(rawaddr); err != nil {
-		return
-	}
+	debug.Printf("connect to remote:%s success", serverport)
 	return
 }
 
 func handleConnection(conn net.Conn) {
+	debug.Printf("socks connect from %s\n", conn.RemoteAddr().String())
+	closed := false
+	defer func() {
+		if !closed {
+			conn.Close()
+		}
+	}()
+
 	if err := handshake(conn); err != nil {
 		debug.Printf("handshake: %s", err)
 		return
@@ -175,43 +172,86 @@ func handleConnection(conn net.Conn) {
 		debug.Println("connect to remote error: ", err)
 		return
 	}
-	go comm.PipeThenClose(conn, remote, false, true)
-	comm.PipeThenClose(remote, conn, true, false)
+	defer func() {
+		if !closed {
+			remote.Close()
+		}
+	}()
+	go comm.PipeThenClose(conn, remote)
+	comm.PipeThenClose(remote, conn)
+	closed = true
 	debug.Println("closed connection to", addr)
 }
 
 func run(addr string) {
 	l, err := net.Listen("tcp", addr)
-	checkError("listening: ", err)
-	debug.Printf("start listening socks5 at %v...\n", addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	debug.Printf("start listen socks5 port%v\n", addr)
 	for {
 		conn, err := l.Accept()
-		checkError("accept: ", err)
+		if err != nil {
+			log.Println("accept:", err)
+			continue
+		}
 		go handleConnection(conn)
 	}
 }
 
+//ServerCipher 服务端数据结构
+type ServerCipher struct {
+	srv    comm.Server
+	cipher *comm.Cipher
+}
+
+var server struct {
+	srvCipher ServerCipher
+}
+
 func main() {
 	var configPath string
-	flag.BoolVar((*bool)(&debug), "d", false, "print debug message")
-	flag.StringVar(&configPath, "c", os.Getenv("HOME")+"/.shadowsocks/config.json", "配置路径")
+	var version bool
+	//var cmdConfig comm.Config
+
+	flag.BoolVar((*bool)(&debug), "d", false, "debug mode")
+	flag.BoolVar((*bool)(&version), "v", false, "current version")
+	flag.StringVar(&configPath, "c", os.Getenv("HOME")+"/.shadowsocks/config.json", "config path")
 	flag.Parse()
 
+	if version {
+		comm.PrintVersion()
+		os.Exit(0)
+	}
 	comm.SetDebug(debug)
+	debug.Println("loading config file: ", configPath)
 	config, err := comm.ParseConfig(configPath)
 	if err != nil {
 		log.Println(err)
-		return
+		os.Exit(1)
 	}
-	comm.InitCipher(config)
-	remote := config.Server + ":" + strconv.Itoa(config.Port)
-	servers.srv = &ServerCipher{remote}
-	run(config.LocalServer + ":" + strconv.Itoa(config.LocalPort))
-}
 
-func checkError(msg string, err error) {
-	if err != nil {
-		fmt.Printf("%s: %s\n", msg, err)
+	if len(config.Servers) > 0 {
+		srv := config.Servers[0]
+		if srv.Password == "" || srv.Port == 0 {
+			log.Println("password or port cannot be empty")
+			os.Exit(1)
+		}
+
+		if srv.Method == "" {
+			srv.Method = "chacha20-ietf-poly1305"
+		}
+
+		err := comm.CheckCipherMethod(srv.Method)
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		server.srvCipher.srv = srv
+		server.srvCipher.cipher = comm.NewCipher(srv)
+		run(":" + strconv.Itoa(config.LocalPort))
+	} else {
+		log.Println("config file has some errors")
 		os.Exit(1)
 	}
 }

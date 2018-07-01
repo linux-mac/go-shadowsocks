@@ -2,22 +2,27 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 	"time"
 )
 
 //Config 配置
 type Config struct {
-	Server      string `json:"server"`
-	Port        int    `json:"port"`
-	LocalServer string `json:"local_server"`
-	LocalPort   int    `json:"local_port"`
-	Password    string `json:"password"`
-	Method      string `json:"method"`
-	Timeout     int    `json:"timeout"`
+	LocalPort int      `json:"local_port"`
+	Timeout   int      `json:"timeout"`
+	Servers   []Server `json:"servers"`
+}
+
+//Server 服务器结构
+type Server struct {
+	Server   string `json:"server"`
+	Port     int    `json:"port"`
+	Password string `json:"password"`
+	Method   string `json:"method"`
 }
 
 //ReadTimeout 连接超时时间
@@ -32,21 +37,27 @@ func ParseConfig(path string) (config *Config, err error) {
 	defer file.Close()
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Println("read config.json error")
+		log.Println("读取配置文件错误")
 		return
 	}
 	config = &Config{}
 	if err = json.Unmarshal(data, &config); err != nil {
 		return
 	}
-	if config.Password == "" {
-		err = errors.New("Config password cannot be empty")
-		return
-	}
-	if config.Method == "" {
-		err = errors.New("Config method cannot be empty")
-		return
-	}
 	ReadTimeout = time.Duration(config.Timeout) * time.Second
 	return
+}
+
+//UpdateConfig 更新配置
+func UpdateConfig(older, newer *Config) {
+	newVal := reflect.ValueOf(newer).Elem()
+	oldVal := reflect.ValueOf(older).Elem()
+	log.Println(newVal, oldVal)
+	return
+}
+
+//PrintVersion 当前版本
+func PrintVersion() {
+	const ver = "0.2.0"
+	fmt.Println("当前版本: ", ver)
 }

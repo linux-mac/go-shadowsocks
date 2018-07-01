@@ -5,28 +5,28 @@ import (
 	"os"
 )
 
-//DebugLog Log开关
+//DebugLog debug log type
 type DebugLog bool
 
 var debug DebugLog
 
 var dLog = log.New(os.Stdin, "[Debug]", log.Ltime)
 
-//Printf 格式化输出
+//Printf log output format
 func (d DebugLog) Printf(format string, args ...interface{}) {
 	if d {
 		dLog.Printf(format, args...)
 	}
 }
 
-//Println 输出
+//Println log output with newline
 func (d DebugLog) Println(args ...interface{}) {
 	if d {
 		dLog.Println(args...)
 	}
 }
 
-//SetDebug 调试开关
+//SetDebug debug switch
 func SetDebug(d DebugLog) {
 	debug = d
 }

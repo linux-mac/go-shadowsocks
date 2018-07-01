@@ -6,27 +6,23 @@ import (
 	"time"
 )
 
-//PipeThenClose 端口数据转发
-func PipeThenClose(src, dst net.Conn, readDec, writeEnc bool) {
+//SetReadTimeout conn read time out
+func SetReadTimeout(c net.Conn) {
+	if ReadTimeout != 0 {
+		c.SetReadDeadline(time.Now().Add(ReadTimeout))
+	}
+}
+
+//PipeThenClose data transfer
+func PipeThenClose(src, dst net.Conn) {
 	defer dst.Close()
+	buf := leakyBuf.Get()
+	defer leakyBuf.Put(buf)
 	for {
 		src.SetReadDeadline(time.Now().Add(ReadTimeout))
-		buf := make([]byte, 4096)
 		n, err := src.Read(buf)
 		if err != nil {
 			break
-		}
-		if readDec {
-			buf, err = DecryptAESCFB(buf)
-			if err != nil {
-				break
-			}
-		}
-		if writeEnc {
-			buf, err = EncryptAESCFB(buf)
-			if err != nil {
-				break
-			}
 		}
 		if n > 0 {
 			if _, err := dst.Write(buf[:n]); err != nil {
@@ -34,7 +30,6 @@ func PipeThenClose(src, dst net.Conn, readDec, writeEnc bool) {
 				break
 			}
 		}
-
 	}
 	return
 }
