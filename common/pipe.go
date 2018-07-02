@@ -1,6 +1,7 @@
 package common
 
 import (
+	"io"
 	"log"
 	"net"
 	"time"
@@ -19,16 +20,19 @@ func PipeThenClose(src, dst net.Conn) {
 	buf := leakyBuf.Get()
 	defer leakyBuf.Put(buf)
 	for {
-		src.SetReadDeadline(time.Now().Add(ReadTimeout))
+		SetReadTimeout(src)
 		n, err := src.Read(buf)
-		if err != nil {
-			break
-		}
 		if n > 0 {
 			if _, err := dst.Write(buf[:n]); err != nil {
 				log.Printf("write error: %s", err)
 				break
 			}
+		}
+		if err != nil {
+			if err == io.EOF {
+				log.Println("read EOF")
+			}
+			break
 		}
 	}
 	return

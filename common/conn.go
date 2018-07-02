@@ -1,6 +1,7 @@
 package common
 
 import (
+	"fmt"
 	"io"
 	"net"
 )
@@ -65,16 +66,17 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 	} else {
 		cipherData = cipherData[:len(b)]
 	}
-
 	n, err = c.Conn.Read(cipherData)
 	if n > 0 {
 		c.decrypt(b[0:n], cipherData[0:n])
+		fmt.Println(b)
 	}
 	return
 }
 
 func (c *Conn) Write(b []byte) (n int, err error) {
 	debug.Println("start write...")
+	fmt.Println(b)
 	var iv []byte
 	if c.enc == nil {
 		iv, err = c.initEncrypt()
@@ -92,12 +94,12 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 	}
 
 	if iv != nil {
-		// Put initialization vector in buffer, do a single write to send both
-		// iv and data.
 		copy(cipherData, iv)
 	}
 
 	c.encrypt(cipherData[len(iv):], b)
+	// cipherData := make([]byte, len(b))
+	// c.encrypt(cipherData, b)
 	n, err = c.Conn.Write(cipherData)
 	return
 }

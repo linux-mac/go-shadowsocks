@@ -19,6 +19,7 @@ import (
 var debug comm.DebugLog
 
 func getRequest(conn *comm.Conn) (host string, err error) {
+	debug.Println("get Request...")
 	comm.SetReadTimeout(conn)
 	const (
 		idType  = 0 // address type index
@@ -70,6 +71,7 @@ func getRequest(conn *comm.Conn) (host string, err error) {
 	}
 	port := binary.BigEndian.Uint16(buf[reqEnd-2 : reqEnd])
 	host = net.JoinHostPort(host, strconv.Itoa(int(port)))
+	debug.Println("finish get Request...")
 	return
 }
 
@@ -123,7 +125,6 @@ func handleClient(conn *comm.Conn, port string) {
 		}
 	}()
 	debug.Printf("piping %s<->%s", conn.RemoteAddr().String(), host)
-
 	go comm.PipeThenClose(conn, remote)
 	comm.PipeThenClose(remote, conn)
 	closed = true
@@ -146,7 +147,7 @@ func run(srv comm.Server) {
 		}
 		if cipher == nil {
 			cipher = comm.NewCipher(srv)
-			log.Println("create cipher for port: ", srv.Port)
+			debug.Println("create cipher for port: ", srv.Port)
 		}
 		debug.Println("start accept...")
 		go handleClient(comm.NewConn(conn, cipher), strconv.Itoa(srv.Port))

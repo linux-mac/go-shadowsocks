@@ -9,7 +9,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"time"
 
 	comm "github.com/go-shadowsocks/common"
 )
@@ -30,11 +29,11 @@ const (
 
 var debug comm.DebugLog
 
-//handshake: sockets 握手阶段
+//handshake:
 func handshake(conn net.Conn) (err error) {
 	debug.Println("start handshake...")
 	buf := make([]byte, 258)
-	conn.SetReadDeadline(time.Now().Add(comm.ReadTimeout))
+	comm.SetReadTimeout(conn)
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 2); err != nil {
 		return err
@@ -45,9 +44,9 @@ func handshake(conn net.Conn) (err error) {
 	}
 	nmethod := int(buf[1])
 	msglen := nmethod + 2
-	if n == msglen { //正常方式完成握手
-	} else if n < msglen { //存在用户名和密码
-		if _, err = io.ReadFull(conn, buf); err != nil { //TODO: 通过用户名密码握手
+	if n == msglen { //general handshake
+	} else if n < msglen { //need password & username
+		if _, err = io.ReadFull(conn, buf); err != nil {
 			return
 		}
 	} else {
@@ -58,7 +57,7 @@ func handshake(conn net.Conn) (err error) {
 	return
 }
 
-//getRequest: 建立连接
+//getRequest: unpack request
 func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 	const (
 		idVer   = 0
@@ -76,8 +75,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 		lenIPv6   = 3 + 1 + net.IPv6len + 2 // 3(ver+cmd+rsv) + 1addrType + ipv6 + 2port
 		lenDmBase = 3 + 1 + 1 + 2           // 3 + 1addrType + 1addrLen + 2port, plus addrLen
 	)
-
-	conn.SetReadDeadline(time.Now().Add(comm.ReadTimeout))
+	comm.SetReadTimeout(conn)
 	buf := make([]byte, 263)
 	var n int
 	if n, err = io.ReadAtLeast(conn, buf, 5); err != nil { // VER+CMD+RSV+ATYP=4
@@ -132,7 +130,7 @@ func getRequest(conn net.Conn) (rawaddr []byte, host string, err error) {
 	return
 }
 
-//createServerConn: 连接远程服务器
+//createServerConn: connect to remote
 func createServerConn(rawaddr []byte, addr string) (remote *comm.Conn, err error) {
 	serverport := server.srvCipher.srv.Server + ":" + strconv.Itoa(server.srvCipher.srv.Port)
 	remote, err = comm.DialWithRawAddr(rawaddr, serverport, server.srvCipher.cipher)

@@ -1,6 +1,6 @@
 package common
 
-//LeakyBuf 缓冲区结构
+//LeakyBuf struct
 type LeakyBuf struct {
 	bufSize  int
 	freeList chan []byte
@@ -11,7 +11,7 @@ const maxNBuf = 2048
 
 var leakyBuf = NewLeakyBuf(leakyBufSize, maxNBuf)
 
-//NewLeakyBuf 漏桶
+//NewLeakyBuf create buffer
 func NewLeakyBuf(bufSize, n int) *LeakyBuf {
 	return &LeakyBuf{
 		bufSize:  bufSize,
@@ -19,7 +19,7 @@ func NewLeakyBuf(bufSize, n int) *LeakyBuf {
 	}
 }
 
-//Get 新建缓冲区或取缓冲区数据
+//Get get leaky buffer data
 func (lb *LeakyBuf) Get() (b []byte) {
 	select {
 	case b = <-lb.freeList:
@@ -29,7 +29,7 @@ func (lb *LeakyBuf) Get() (b []byte) {
 	return
 }
 
-//Put 存放缓冲数据
+//Put put data to leaky buffer
 func (lb *LeakyBuf) Put(b []byte) {
 	if len(b) != lb.bufSize {
 		panic("invalid buffer size that's put into leaky buffer")
