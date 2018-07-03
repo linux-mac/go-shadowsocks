@@ -29,8 +29,7 @@ type Cipher struct {
 var c Cipher
 
 var cipherMethod = map[string]*cipherInfo{
-	"aes-256-cfb": {32, 16, newAESCFBStream},
-	//"aes-256-gcm":            {32, 16, newAESGCMStream},
+	"aes-256-cfb":            {32, 16, newAESCFBStream},
 	"chacha20-ietf-poly1305": {32, 12, newChaCha20IETFStream},
 }
 

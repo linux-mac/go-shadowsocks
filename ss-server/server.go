@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	comm "github.com/go-shadowsocks/common"
 )
@@ -75,25 +76,14 @@ func getRequest(conn *comm.Conn) (host string, err error) {
 	return
 }
 
-const logCntDelta = 100
-
-var connCnt int
-var nextLogConnCnt = logCntDelta
-
 func handleClient(conn *comm.Conn, port string) {
 	var host string
 	debug.Println("start handle client...")
-	connCnt++
-	if connCnt-nextLogConnCnt >= 0 {
-		debug.Printf("Number of client connections reaches %d\n", nextLogConnCnt)
-		nextLogConnCnt += logCntDelta
-	}
 
 	debug.Printf("new client %s->%s\n", conn.RemoteAddr().String(), conn.LocalAddr())
 	closed := false
 	defer func() {
 		debug.Printf("closed pipe %s<->%s\n", conn.RemoteAddr().String(), host)
-		connCnt--
 		if !closed {
 			conn.Close()
 		}
@@ -113,7 +103,8 @@ func handleClient(conn *comm.Conn, port string) {
 	}
 
 	debug.Println("connecting: ", host)
-	remote, err := net.Dial("tcp", host)
+	remote, err := net.DialTimeout("tcp", host, time.Second*10)
+	//remote, err := net.Dial("tcp", host)
 	if err != nil {
 		debug.Printf("dial error: %s", err)
 		closed = true
@@ -149,6 +140,7 @@ func run(srv comm.Server) {
 			cipher = comm.NewCipher(srv)
 			debug.Println("create cipher for port: ", srv.Port)
 		}
+		debug.Println(cipher)
 		debug.Println("start accept...")
 		go handleClient(comm.NewConn(conn, cipher), strconv.Itoa(srv.Port))
 	}
