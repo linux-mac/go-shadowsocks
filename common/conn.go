@@ -5,7 +5,7 @@ import (
 	"net"
 )
 
-//Conn 自定义Conn结构
+//Conn struct
 type Conn struct {
 	net.Conn
 	*Cipher
@@ -13,7 +13,7 @@ type Conn struct {
 	WriteBuf []byte
 }
 
-//NewConn 创建Conn
+//NewConn create
 func NewConn(c net.Conn, cipher *Cipher) *Conn {
 	return &Conn{
 		Conn:     c,
@@ -30,7 +30,7 @@ func (c *Conn) Close() error {
 	return c.Conn.Close()
 }
 
-//DialWithRawAddr 封装后的Conn发起远程请求
+//DialWithRawAddr create remote connection
 func DialWithRawAddr(rawaddr []byte, server string, cipher *Cipher) (c *Conn, err error) {
 	conn, err := net.Dial("tcp", server)
 	if err != nil {

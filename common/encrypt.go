@@ -17,7 +17,7 @@ type cipherInfo struct {
 	newStream func(key, iv []byte, doe DecOrEnc) (cipher.Stream, error)
 }
 
-//Cipher 加密结构
+//Cipher struct
 type Cipher struct {
 	enc  cipher.Stream
 	dec  cipher.Stream
@@ -62,7 +62,7 @@ func newChaCha20IETFStream(key, iv []byte, _ DecOrEnc) (cipher.Stream, error) {
 	return chacha20.NewCipher(key, iv)
 }
 
-//CheckCipherMethod 检查加密方法是否系统支持
+//CheckCipherMethod check encrypt method whether support or not
 func CheckCipherMethod(method string) error {
 	_, ok := cipherMethod[method]
 	if !ok {
@@ -71,7 +71,7 @@ func CheckCipherMethod(method string) error {
 	return nil
 }
 
-//NewCipher 初始化
+//NewCipher init
 func NewCipher(srv Server) (c *Cipher) {
 	m := cipherMethod[srv.Method]
 	key := evpBytesToKey(srv.Password, m.keyLen)

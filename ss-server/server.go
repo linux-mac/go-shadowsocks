@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -55,7 +55,11 @@ func getRequest(conn *comm.Conn) (host string, err error) {
 		}
 		reqStart, reqEnd = idDm0, idDm0+int(buf[idDmLen])+lenDmBase
 	default:
-		err = fmt.Errorf("addr type %d not supported", addrType)
+		//err = fmt.Errorf("addr type %d not supported", addrType)
+		err = errors.New(`decode error, cause this happened maybe:
+			1. client and server password is different
+			2. your server cannot connect to the website you are aiming to visit
+			3. if not the above reasons, please email to maintainer : kunnsh@gmail.com`)
 		return
 	}
 	if _, err = io.ReadFull(conn, buf[reqStart:reqEnd]); err != nil {
@@ -79,7 +83,6 @@ func getRequest(conn *comm.Conn) (host string, err error) {
 func handleClient(conn *comm.Conn, port string) {
 	var host string
 	debug.Println("start handle client...")
-
 	debug.Printf("new client %s->%s\n", conn.RemoteAddr().String(), conn.LocalAddr())
 	closed := false
 	defer func() {
@@ -140,7 +143,6 @@ func run(srv comm.Server) {
 			cipher = comm.NewCipher(srv)
 			debug.Println("create cipher for port: ", srv.Port)
 		}
-		debug.Println(cipher)
 		debug.Println("start accept...")
 		go handleClient(comm.NewConn(conn, cipher), strconv.Itoa(srv.Port))
 	}
