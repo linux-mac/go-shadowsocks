@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	comm "github.com/go-shadowsocks/common"
 )
@@ -108,8 +109,8 @@ func handleClient(conn *comm.Conn, port string) {
 	}
 
 	debug.Println("connecting: ", host)
-	//remote, err := net.DialTimeout("tcp", host, time.Second*10)
-	remote, err := net.Dial("tcp", host)
+	remote, err := net.DialTimeout("tcp", host, time.Second*12)
+	//remote, err := net.Dial("tcp", host)
 	if err != nil {
 		debug.Printf("dial error: %s", err)
 		closed = true
