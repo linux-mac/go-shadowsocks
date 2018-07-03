@@ -1,3 +1,5 @@
+#!/bin/bash
+
 version="0.2.0"
 platform="linux"
 os_uname=`uname`
@@ -10,3 +12,5 @@ fi
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz
 tar xzf go-shadowsocks-server.tar.gz && sudo mv ss-server-$platform-amd64 /usr/local/bin/ssserver && rm go-shadowsocks-server.tar.gz
 mkdir -p ~/.shadowsocks && curl -Lo ss-config.json https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/sample-config.json && mv ss-config.json ~/.shadowsocks/config.json
+
+echo "🍻install successfully，config file is at ~/.shadowsocks/config.json"
