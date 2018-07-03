@@ -127,3 +127,11 @@ func (c *Cipher) encrypt(dst, src []byte) {
 func (c *Cipher) decrypt(dst, src []byte) {
 	c.dec.XORKeyStream(dst, src)
 }
+
+//Copy reintial stream
+func (c *Cipher) Copy() *Cipher {
+	nc := *c
+	nc.enc = nil
+	nc.dec = nil
+	return &nc
+}

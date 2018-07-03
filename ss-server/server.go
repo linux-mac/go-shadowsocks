@@ -17,27 +17,31 @@ import (
 	comm "github.com/go-shadowsocks/common"
 )
 
+const (
+	idType  = 0 // address type index
+	idIP0   = 1 // ip address start index
+	idDmLen = 1 // domain address length index
+	idDm0   = 2 // domain address start index
+
+	typeIPv4 = 1 // type is ipv4 address
+	typeDm   = 3 // type is domain address
+	typeIPv6 = 4 // type is ipv6 address
+
+	lenIPv4     = net.IPv4len + 2 // ipv4 + 2port
+	lenIPv6     = net.IPv6len + 2 // ipv6 + 2port
+	lenDmBase   = 2               // 1addrLen + 2port, plus addrLen
+	lenHmacSha1 = 10
+)
+
 var debug comm.DebugLog
 
 func getRequest(conn *comm.Conn) (host string, err error) {
 	debug.Println("get Request...")
 	comm.SetReadTimeout(conn)
-	const (
-		idType  = 0 // address type index
-		idIP0   = 1 // ip address start index
-		idDmLen = 1 // domain address length index
-		idDm0   = 2 // domain address start index
 
-		typeIPv4 = 1 // type is ipv4 address
-		typeDm   = 3 // type is domain address
-		typeIPv6 = 4 // type is ipv6 address
-
-		lenIPv4     = net.IPv4len + 2 // ipv4 + 2port
-		lenIPv6     = net.IPv6len + 2 // ipv6 + 2port
-		lenDmBase   = 2               // 1addrLen + 2port, plus addrLen
-		lenHmacSha1 = 10
-	)
 	buf := make([]byte, 269)
+	// io.ReadFull(conn, buf[:7])
+	// return "", err
 	if _, err := io.ReadFull(conn, buf[:idType+1]); err != nil {
 		return "", err
 	}
@@ -55,8 +59,7 @@ func getRequest(conn *comm.Conn) (host string, err error) {
 		}
 		reqStart, reqEnd = idDm0, idDm0+int(buf[idDmLen])+lenDmBase
 	default:
-		//err = fmt.Errorf("addr type %d not supported", addrType)
-		err = errors.New(`decode error, cause this happened maybe:
+		err = errors.New(`😓decode error, cause this happened maybe:
 			1. client and server password is different
 			2. your server cannot connect to the website you are aiming to visit
 			3. if not the above reasons, please email to maintainer : kunnsh@gmail.com`)
@@ -139,10 +142,10 @@ func run(srv comm.Server) {
 			debug.Printf("Accept error: %s", err)
 			return
 		}
-		if cipher == nil {
-			cipher = comm.NewCipher(srv)
-			debug.Println("create cipher for port: ", srv.Port)
-		}
+		//if cipher == nil {
+		cipher = comm.NewCipher(srv)
+		debug.Println("create cipher for port: ", srv.Port)
+		//}
 		debug.Println("start accept...")
 		go handleClient(comm.NewConn(conn, cipher), strconv.Itoa(srv.Port))
 	}

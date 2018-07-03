@@ -23,7 +23,7 @@ func NewConn(c net.Conn, cipher *Cipher) *Conn {
 	}
 }
 
-//Close 关闭Conn
+//Close Conn
 func (c *Conn) Close() error {
 	leakyBuf.Put(c.ReadBuf)
 	leakyBuf.Put(c.WriteBuf)
@@ -36,7 +36,7 @@ func DialWithRawAddr(rawaddr []byte, server string, cipher *Cipher) (c *Conn, er
 	if err != nil {
 		return
 	}
-	c = NewConn(conn, cipher)
+	c = NewConn(conn, cipher.Copy())
 	if _, err = c.Write(rawaddr); err != nil {
 		c.Close()
 		return nil, err
@@ -47,6 +47,7 @@ func DialWithRawAddr(rawaddr []byte, server string, cipher *Cipher) (c *Conn, er
 func (c *Conn) Read(b []byte) (n int, err error) {
 	debug.Println("start read...")
 	if c.dec == nil {
+		debug.Println("initDecrypt")
 		iv := make([]byte, c.info.ivLen)
 		if _, err = io.ReadFull(c.Conn, iv); err != nil {
 			return
@@ -79,6 +80,7 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 	debug.Println("before encrypt:", b)
 	var iv []byte
 	if c.enc == nil {
+		debug.Println("initEncrypt")
 		iv, err = c.initEncrypt()
 		if err != nil {
 			return
