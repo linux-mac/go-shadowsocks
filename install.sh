@@ -17,5 +17,6 @@ fi
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz
 tar xzf go-shadowsocks-server.tar.gz && sudo mv ss-server-$platform-amd64 /usr/local/bin/ssserver && rm go-shadowsocks-server.tar.gz
 mkdir -p ~/.shadowsocks && curl -Lo ss-config.json https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/sample-config.json && mv ss-config.json ~/.shadowsocks/config.json
-
+curl -Lo https://github.com/sedgwickz/go-shadowsocks/raw/master/script/go-shadowsocks.service && mv go-shadowsocks.service /ect/systemd/system
+systemctl daemon-reload && systemctl start go-shadowsocks
 echo "🍻安装成功，配置文件位于 ~/.shadowsocks/config.json，建议您及时更改端口和密码。更改成功后使用 systemctl restart go-shadowsocks 重启服务"
