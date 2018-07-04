@@ -58,6 +58,6 @@ func UpdateConfig(older, newer *Config) {
 
 //PrintVersion 当前版本
 func PrintVersion() {
-	const ver = "0.2.0"
+	const ver = "0.3.0"
 	fmt.Println("当前版本: ", ver)
 }

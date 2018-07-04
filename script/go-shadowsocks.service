@@ -1,0 +1,9 @@
+[Unit]
+Decription=shadowsocks proxy by golang
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/ssserver -c /root/.shadowsocks/config.json
+
+[Install]
+WantedBy=multi-user.target
