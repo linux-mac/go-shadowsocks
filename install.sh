@@ -9,9 +9,9 @@ elif [[ $os_uname == 'Darwin' ]]; then
     platform='darwin'
 fi
 
-if [ ! -d "/ect/systemd"]; then
+if [ ! -d "/ect/systemd" ]; then
     echo "😞您的操作系统不支持systemd系统管理服务，本脚本暂不支持您的系统意见安装。请更换您的操作操作系统为Ubuntu16.04LTS, Centos7等系统，再执行该命令"
-    return 1
+    exit 1
 fi
 
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz
