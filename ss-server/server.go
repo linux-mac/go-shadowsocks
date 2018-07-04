@@ -111,8 +111,13 @@ func handleClient(conn *comm.Conn, port string) {
 	//remote, err := net.DialTimeout("tcp", host, time.Second*12)
 	remote, err := net.Dial("tcp", host)
 	if err != nil {
-		debug.Printf("dial error: %s", err)
-		closed = true
+		if ne, ok := err.(*net.OpError); ok && (ne.Err == syscall.EMFILE || ne.Err == syscall.ENFILE) {
+			// log too many open file error
+			// EMFILE is process reaches open file limits, ENFILE is system limit
+			log.Println("dial error:", err)
+		} else {
+			log.Println("error connecting to:", host, err)
+		}
 		return
 	}
 	defer func() {
@@ -141,12 +146,12 @@ func run(srv comm.Server) {
 			debug.Printf("Accept error: %s", err)
 			return
 		}
-		//if cipher == nil {
-		cipher = comm.NewCipher(srv)
-		debug.Println("create cipher for port: ", srv.Port)
-		//}
+		if cipher == nil {
+			cipher = comm.NewCipher(srv)
+			debug.Println("create cipher for port: ", srv.Port)
+		}
 		debug.Println("start accept...")
-		go handleClient(comm.NewConn(conn, cipher), strconv.Itoa(srv.Port))
+		go handleClient(comm.NewConn(conn, cipher.Copy()), strconv.Itoa(srv.Port))
 	}
 }
 

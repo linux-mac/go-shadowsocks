@@ -67,17 +67,16 @@ func (c *Conn) Read(b []byte) (n int, err error) {
 		cipherData = cipherData[:len(b)]
 	}
 	n, err = c.Conn.Read(cipherData)
-	//debug.Println("before decrypt:", cipherData)
+	debug.Println("before decrypt:", cipherData)
 	if n > 0 {
 		c.decrypt(b[0:n], cipherData[0:n])
-		//debug.Println("after decrypt:", b)
+		debug.Println("after decrypt:", b)
 	}
 	return
 }
 
 func (c *Conn) Write(b []byte) (n int, err error) {
 	debug.Println("start write...")
-	//debug.Println("before encrypt:", b)
 	var iv []byte
 	if c.enc == nil {
 		debug.Println("initEncrypt")
@@ -98,9 +97,9 @@ func (c *Conn) Write(b []byte) (n int, err error) {
 	if iv != nil {
 		copy(cipherData, iv)
 	}
-
+	debug.Println("before encrypt:", b)
 	c.encrypt(cipherData[len(iv):], b)
-	//debug.Println("after encrypt:", cipherData[len(iv):])
+	debug.Println("after encrypt:", cipherData)
 	n, err = c.Conn.Write(cipherData)
 	return
 }
