@@ -17,7 +17,7 @@ fi
 goshadowsocks=`systemctl status go-shadowsocks | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1`
 
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz \
-&& tar xzf go-shadowsocks-server.tar.gz && sudo mv ss-server-$platform-amd64 /usr/local/bin/ssserver && rm go-shadowsocks-server.tar.gz
+&& tar xzf go-shadowsocks-server.tar.gz && sudo mv ss-server-$platform-amd64 /usr/local/bin/ssserver && rm go-shadowsocks-server.tar.gz \
 && curl -Lo ss-config.json https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/sample-config.json \
 && mkdir -p ~/.shadowsocks \
 && mv ss-config.json ~/.shadowsocks/config.json \
