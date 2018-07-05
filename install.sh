@@ -18,9 +18,8 @@ goshadowsocks=`systemctl status go-shadowsocks | grep Active | awk '{print $3}' 
 
 curl -Lo go-shadowsocks-server.tar.gz https://github.com/sedgwickz/go-shadowsocks/releases/download/$version/ss-server-$platform-amd64.tar.gz \
 && tar xzf go-shadowsocks-server.tar.gz && sudo mv ss-server-$platform-amd64 /usr/local/bin/ssserver && rm go-shadowsocks-server.tar.gz \
-&& curl -Lo ss-config.json https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/sample-config.json \
-&& mkdir -p ~/.shadowsocks \
-&& mv ss-config.json ~/.shadowsocks/config.json \
+&& curl -Lo ss-config.json https://raw.githubusercontent.com/sedgwickz/go-shadowsocks/master/sample-config.json \ 
+&& mkdir -p ~/.shadowsocks && mv ss-config.json ~/.shadowsocks/config.json \
 && curl -Lo https://github.com/sedgwickz/go-shadowsocks/raw/master/script/go-shadowsocks.service \
 && mv go-shadowsocks.service /ect/systemd/system \
 && systemctl daemon-reload \
@@ -35,4 +34,4 @@ else
     echo "go-shadowsocks服务已启动"
 fi
 
-echo -e "配置文件位于 ~/.shadowsocks/config.json \n 建议您及时更改端口和密码 \n更改成功后使用 systemctl restart go-shadowsocks 重启服务"
+echo -e "配置文件位于 ~/.shadowsocks/config.json \n建议您及时更改端口和密码 \n更改成功后使用 systemctl restart go-shadowsocks 重启服务"
